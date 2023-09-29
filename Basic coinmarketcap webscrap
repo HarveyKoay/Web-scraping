@@ -1,0 +1,107 @@
+# from bs4 import BeautifulSoup
+# import requests
+# import csv
+# import pandas as pd
+
+# crypto_name_list = []
+# crypto_symbol_list = []
+# crypto_price_list = []
+# crypto_market_cap_list = []
+# crypto_circulating_supply_list = []
+
+# #create an empty data frame to organise the data
+# df = pd.DataFrame()
+
+# scrap_page = requests.get("https://coinmarketcap.com/")
+# soup = BeautifulSoup(scrap_page.text, 'html.parser')
+
+# names = soup.find_all("p", attrs={"class":"sc-4984dd93-0 kKpPOn"})
+# symbol = soup.find_all("p", attrs={"class":"sc-4984dd93-0 iqdbQL coin-item-symbol"})
+# prices = soup.find_all("div", attrs={"class":"sc-bc83b59-0 iVdfNf"})
+# market_cap = soup.findAll("span", attrs={"class":"sc-f8982b1f-1 bOsKfy"})
+# circulating_supply = soup.find_all("p", attrs={"class":"sc-4984dd93-0 WfVLk"})
+
+# count = 0
+# for num in range(len(names)):
+#     if count < 20:
+#         count += 1
+#         crypto_name_list.append(names[num].text)
+#         crypto_symbol_list.append(symbol[num].text)
+#         crypto_price_list.append(prices[num].text)
+#         crypto_market_cap_list.append(market_cap[num].text)
+#         crypto_circulating_supply_list.append(circulating_supply[num].text)
+    
+# df["Name"] = crypto_name_list
+# df["Symbol"] = crypto_symbol_list
+# df["Price"] = crypto_price_list
+# df["Market Cap"] = crypto_market_cap_list
+# df["Circulating Supply"] = crypto_circulating_supply_list
+    
+# print(df)
+
+# with open("coinmarketscrap.csv", "w") as f:
+#     writer = csv.writer(f)
+#     writer.writerow(["Name", "Price", "1hr%"])
+#     for name, price, onehour in zip(names, prices, onehourpercent):
+#         writer.writerow([name.text, price.text, onehour.text])
+
+from bs4 import BeautifulSoup
+from selenium import webdriver
+import time
+import csv
+import pandas as pd
+
+crypto_name_list = []
+crypto_symbol_list = []
+crypto_price_list = []
+crypto_market_cap_list = []
+crypto_circulating_supply_list = []
+
+# Create an empty DataFrame to organize the data
+df = pd.DataFrame()
+
+# Configure Selenium to use a web driver (e.g., ChromeDriver)
+driver = webdriver.Chrome()
+driver.get("https://coinmarketcap.com/")
+time.sleep(10)  # Wait for the page to load (you can adjust the waiting time as needed)
+
+# Extract the page source after waiting
+page_source = driver.page_source
+
+# Close the web driver
+driver.quit()
+
+# Parse the page source with BeautifulSoup
+soup = BeautifulSoup(page_source, 'html.parser')
+
+# Find the required elements using BeautifulSoup
+names = soup.find_all("p", attrs={"class": "sc-4984dd93-0 kKpPOn"})
+# prices = soup.find_all("div", attrs={"class": "sc-bc83b59-0 iVdfNf"})
+market_cap = soup.findAll("span", attrs={"class": "sc-f8982b1f-1 bOsKfy"})
+circulating_supply = soup.find_all("p", attrs={"class": "sc-4984dd93-0 WfVLk"})
+
+min_length = 100
+
+# Iterate over the elements and extract the data
+for num in range(min_length):
+    crypto_market_cap_list.append(market_cap[num].text)
+    crypto_circulating_supply_list.append(circulating_supply[num].text)
+
+# for num in range(105):
+#     crypto_price_list.append(prices[num].text)
+
+for num in range(106):
+    crypto_name_list.append(names[num].text.strip())
+
+del crypto_name_list[:6]  # Delete the first 6 elements from the crypto_name_list
+
+# Assign the lists to the DataFrame columns
+df["Name"] = crypto_name_list[:min_length]
+# df["Price"] = (crypto_price_list[:min_length])
+df["Market Cap"] = crypto_market_cap_list[:min_length]
+df["Circulating Supply"] = crypto_circulating_supply_list[:min_length]
+
+pd.set_option('display.max_rows', None)   # Show all rows
+
+# Print the DataFrame
+print(df)
